@@ -1,0 +1,126 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-heading: 'Space Grotesk', sans-serif;
+    --font-body: 'Manrope', sans-serif;
+
+    /* Palette Tokens */
+    --paper: #FDFBF7;
+    --paper-muted: #F7F3EC;
+    --cream: #EFE7DC;
+    --cream-dark: #E2D6C5;
+    
+    --ink: #1A1615;
+    --ink-muted: #57504B;
+    --ink-light: #8C827A;
+
+    --espresso: #3D281D;
+    --espresso-light: #5C3E2E;
+    --espresso-deep: #291A12;
+
+    --amber: #D97706;
+    --amber-light: #F59E0B;
+    --amber-bg: #FEF3C7;
+
+    --aubergine: #3B1F2B;
+    --aubergine-light: #573142;
+    --aubergine-bg: #F5EBF0;
+
+    --border-color: rgba(61, 40, 29, 0.12);
+    --border-hover: rgba(61, 40, 29, 0.25);
+
+    --shadow-soft: 0 4px 20px -2px rgba(26, 22, 21, 0.05), 0 2px 6px -1px rgba(26, 22, 21, 0.03);
+    --shadow-glass: 0 10px 30px -5px rgba(61, 40, 29, 0.08), 0 4px 12px -2px rgba(26, 22, 21, 0.04);
+  }
+
+  body {
+    background-color: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    letter-spacing: -0.02em;
+  }
+}
+
+/* Glassmorphism & Custom Design System Utilities */
+.kinetic-glass {
+  background: rgba(253, 251, 247, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(61, 40, 29, 0.1);
+  box-shadow: var(--shadow-glass);
+}
+
+.kinetic-glass-dark {
+  background: rgba(41, 26, 18, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(253, 251, 247, 0.12);
+  color: #FDFBF7;
+  box-shadow: 0 12px 40px -5px rgba(0, 0, 0, 0.3);
+}
+
+.espresso-gradient {
+  background: linear-gradient(135deg, #3D281D 0%, #291A12 100%);
+}
+
+.amber-gradient {
+  background: linear-gradient(135deg, #D97706 0%, #F59E0B 100%);
+}
+
+.aubergine-gradient {
+  background: linear-gradient(135deg, #3B1F2B 0%, #573142 100%);
+}
+
+/* Subtle Kinetic Animations */
+@keyframes gentle-float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(1deg);
+  }
+}
+
+.animate-float {
+  animation: gentle-float 6s ease-in-out infinite;
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 12px rgba(217, 119, 6, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(217, 119, 6, 0);
+  }
+}
+
+.pulse-amber {
+  animation: pulse-ring 2.5s infinite;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--paper-muted);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--cream-dark);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--espresso-light);
+}
