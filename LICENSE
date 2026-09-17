@@ -1,21 +1,44 @@
-MIT License
+# Repeato Proprietary License
 
-Copyright (c) 2026 Bhisham T.
+Copyright (c) 2026 Bhisham T. All rights reserved.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+## 1. Ownership
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+The Repeato software, source code, documentation, design system, branding, visual assets, database schema, and related materials (collectively, the “Software”) are proprietary and remain the exclusive property of Bhisham T., except for third-party components that are separately licensed.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+## 2. Permission
+
+No permission is granted to use, copy, reproduce, modify, adapt, merge, publish, distribute, sublicense, sell, rent, lease, host, deploy, offer as a service, or create derivative works from the Software, in whole or in part, without prior written permission from the copyright holder.
+
+## 3. Commercial Use Prohibited Without Permission
+
+Commercial use is expressly prohibited without a separate written commercial license signed by the copyright holder. This includes, without limitation:
+
+- using the Software in a commercial product or service;
+- using the Software to operate or support a business;
+- selling, reselling, licensing, sublicensing, or monetizing the Software;
+- hosting or providing the Software as a service;
+- incorporating the Software into another commercial application; and
+- using the Software or its design, branding, or substantial portions for commercial advantage.
+
+## 4. Limited Evaluation
+
+Viewing the public repository and evaluating the Software for personal, non-commercial purposes is permitted. Evaluation does not grant permission to copy, deploy, distribute, modify, or use the Software in production.
+
+## 5. Requests for Permission
+
+For commercial licensing or any other permission, contact the copyright holder through the contact information listed in the repository or through GitHub at:
+
+https://github.com/Bhishamt
+
+## 6. Unauthorized Use
+
+Any use outside the permissions granted by this license is unauthorized and may constitute copyright infringement or breach of contract. The copyright holder reserves all rights and remedies available under applicable law, including requests for removal, takedown notices, claims for damages, and legal action where appropriate.
+
+## 7. Third-Party Components
+
+This license does not replace or limit the licenses of third-party dependencies, libraries, fonts, icons, or other materials included in or used by the Software. Those materials remain subject to their respective licenses.
+
+## 8. Disclaimer
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW. THE COPYRIGHT HOLDER SHALL NOT BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY ARISING FROM THE SOFTWARE OR ITS USE.
