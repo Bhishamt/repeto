@@ -13,3 +13,28 @@ export const supabase = isSupabaseConfigured
       },
     })
   : null;
+
+export interface SupabaseConfigStatus {
+  isConfigured: boolean;
+  mode: 'live' | 'mock';
+  hasUrl: boolean;
+  hasAnonKey: boolean;
+}
+
+export const getSupabaseStatus = (): SupabaseConfigStatus => ({
+  isConfigured: isSupabaseConfigured,
+  mode: isSupabaseConfigured ? 'live' : 'mock',
+  hasUrl: Boolean(supabaseUrl),
+  hasAnonKey: Boolean(supabaseAnonKey),
+});
+
+export const checkSupabaseHealth = async (): Promise<boolean> => {
+  if (!supabase) return false;
+  try {
+    const { error } = await supabase.from('_health').select('count', { count: 'exact', head: true });
+    return !error;
+  } catch {
+    return false;
+  }
+};
+
