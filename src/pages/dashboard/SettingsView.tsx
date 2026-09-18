@@ -4,6 +4,7 @@ import { Card } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
+import { Toast } from '../../components/ui/Toast';
 import { Settings, ShieldCheck, Users, Check, AlertTriangle } from 'lucide-react';
 
 export const SettingsView: React.FC = () => {
@@ -126,6 +127,14 @@ export const SettingsView: React.FC = () => {
           </Card>
         </div>
       </div>
+
+      {saved && (
+        <Toast
+          message="Business settings saved successfully!"
+          type="success"
+          onClose={() => setSaved(false)}
+        />
+      )}
     </div>
   );
 };
