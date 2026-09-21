@@ -27,6 +27,7 @@
 - [Project Directory Structure](#-project-directory-structure)
 - [Documentation & Specifications](#-documentation--specifications)
 - [Database & Row Level Security (RLS) Schema](#-database--row-level-security-rls-schema)
+- [Dual-Mode API Architecture](#-dual-mode-api-architecture)
 - [Getting Started](#-getting-started)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
@@ -186,14 +187,24 @@ The database migration scripts are managed via Supabase SQL migrations:
 
 ---
 
+## ⚡ Dual-Mode API Architecture
+
+Repeato features a robust **Dual-Mode Data Layer** managed via [`src/services/api.ts`](src/services/api.ts):
+
+* **🌐 Supabase Live Mode**: When `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are configured, `apiService` automatically routes requests to Supabase PostgreSQL with real-time Row Level Security checks.
+* **⚡ Reactive Offline / Fallback Mode**: If environment variables are omitted or database calls fail, the platform gracefully defaults to an in-memory `ReactiveStore` pre-seeded with rich sample cafe data, allowing zero-friction local testing and UI demonstration.
+
+---
+
 ## 🚀 Getting Started
 
 ### Prerequisites
 
 * **Node.js**: `v18.0.0` or higher
 * **npm**: `v9.0.0` or higher
+* **Supabase Account** *(Optional, for live database persistence)*
 
-### Installation
+### Installation & Setup
 
 1. **Clone the repository**:
    ```bash
@@ -206,14 +217,19 @@ The database migration scripts are managed via Supabase SQL migrations:
    npm install
    ```
 
-3. **Configure Environment Variables**:
-   Create a `.env` file in the root directory:
+3. **Configure Environment Variables** *(Optional for Live Supabase mode)*:
+   Create a `.env` file in the project root:
    ```env
    VITE_SUPABASE_URL=https://your-supabase-project.supabase.co
    VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
    ```
 
-4. **Launch Development Server**:
+4. **Apply Database Migrations** *(If using Supabase)*:
+   Execute the migration scripts in order within your Supabase SQL Editor:
+   * [`supabase/migrations/001_initial_schema.sql`](supabase/migrations/001_initial_schema.sql)
+   * [`supabase/migrations/002_security_and_realtime.sql`](supabase/migrations/002_security_and_realtime.sql)
+
+5. **Launch Development Server**:
    ```bash
    npm run dev
    ```
