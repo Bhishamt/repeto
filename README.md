@@ -25,6 +25,7 @@
   - [4. Staff Counter Station & Fraud Prevention](#4-staff-counter-station--fraud-prevention)
 - [Architecture & Tech Stack](#-architecture--tech-stack)
 - [Project Directory Structure](#-project-directory-structure)
+- [Documentation & Specifications](#-documentation--specifications)
 - [Database & Row Level Security (RLS) Schema](#-database--row-level-security-rls-schema)
 - [Getting Started](#-getting-started)
   - [Prerequisites](#prerequisites)
@@ -107,6 +108,14 @@ Repeato features a signature UI language called **Espresso Kinetic Glass**, comb
 
 ```
 repeto/
+├── docs/                       # Comprehensive architecture & design docs
+│   ├── architecture/           # System design & multi-tenant specs
+│   ├── decisions/              # Architectural Decision Records (ADRs)
+│   ├── design/                 # Espresso Kinetic Glass design guidelines
+│   ├── product/                # Feature specs & roadmap
+│   ├── requirements/           # Functional & non-functional requirements
+│   ├── security/               # RLS policies & anti-fraud threat model
+│   └── testing/                # Test suites & quality assurance plans
 ├── public/                     # Static assets and public resources
 ├── src/
 │   ├── components/             # Reusable UI components & Espresso design system
@@ -119,17 +128,32 @@ repeto/
 │   │   ├── app/                # Customer mobile views (/app/*)
 │   │   ├── auth/               # Merchant authentication & onboarding
 │   │   └── dashboard/          # Merchant admin dashboard views (/dashboard/*)
+│   ├── services/               # Dual-mode API services & data fetching
 │   ├── types/                  # TypeScript interfaces & domain models
 │   ├── App.tsx                 # Application router & route layout setup
 │   ├── index.css               # Global styles & Tailwind configuration
 │   └── main.tsx                # Application entry point
 ├── supabase/
 │   └── migrations/             # SQL schema migrations & RLS policies
-│       └── 001_initial_schema.sql
+│       ├── 001_initial_schema.sql
+│       └── 002_security_and_realtime.sql
 ├── package.json                # Project dependencies & scripts
 ├── tsconfig.json               # TypeScript configuration
 └── vite.config.ts              # Vite configuration
 ```
+
+---
+
+## 📚 Documentation & Specifications
+
+The project includes an in-depth documentation suite located in the [`docs/`](docs/) directory:
+
+- 🏗️ **[Architecture](docs/architecture/)**: Multi-tenant database design, state management, and scalability strategies.
+- 📋 **[Requirements](docs/requirements/)**: Functional specifications, user stories, and acceptance criteria.
+- 🎨 **[Design System](docs/design/)**: Espresso Kinetic Glass design tokens, component standards, and motion principles.
+- 🔒 **[Security](docs/security/)**: Row Level Security (RLS) definitions, authentication flows, and single-use QR ticket anti-fraud mechanisms.
+- 🧪 **[Testing](docs/testing/)**: Quality assurance test plans, manual test cases, and verification strategies.
+- 🎯 **[Product & ADRs](docs/product/)**: Product roadmap, domain models, and key architectural decision records ([`docs/decisions/`](docs/decisions/)).
 
 ---
 
