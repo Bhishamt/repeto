@@ -159,12 +159,14 @@ The project includes an in-depth documentation suite located in the [`docs/`](do
 
 ## 🗄️ Database & Row Level Security (RLS) Schema
 
-The production-ready database migration script is located at [`supabase/migrations/001_initial_schema.sql`](supabase/migrations/001_initial_schema.sql).
+The database migration scripts are managed via Supabase SQL migrations:
+- 📜 **Initial Schema**: [`supabase/migrations/001_initial_schema.sql`](supabase/migrations/001_initial_schema.sql) — Core multi-tenant tables, triggers, and indexes.
+- 🛡️ **Security & Realtime Policies**: [`supabase/migrations/002_security_and_realtime.sql`](supabase/migrations/002_security_and_realtime.sql) — Enhanced tenant isolation RLS, owner permissions, staff access controls, and realtime subscriptions.
 
 ### Core Entities
 
 1. `businesses`: Merchant identity, custom slug, branding colors, and logo.
-2. `business_members`: Maps owners/staff to specific business tenants.
+2. `business_members`: Maps owners/staff to specific business tenants (`owner`, `staff`, `manager`).
 3. `customers`: End-user customer profiles (name, phone, email).
 4. `business_customers`: Multi-tenant customer relationship tracking points, visits, tier status, and total spend.
 5. `products`: Merchant product catalog items with point earning potential.
@@ -173,11 +175,14 @@ The production-ready database migration script is located at [`supabase/migratio
 8. `rewards`: Merchant reward offerings and point costs.
 9. `reward_redemptions`: One-time single-use redemption tickets with expiration timestamps.
 10. `qr_codes`: Analytics-tracked tabletop QR codes.
+11. `purchases`: Ledger tracking in-store purchase bills and point additions.
 
 ### Row Level Security (RLS) Guarantees
 
-* **Merchant Isolation**: RLS policies enforce that business owners and staff can only access records matching their assigned `business_id`.
+* **Merchant Isolation**: RLS policies enforce that business owners and staff can only view and edit records matching their assigned `business_id` (`business_members` verification).
+* **Authenticated Business Creation**: Authenticated users can create business tenants and automatically claim ownership.
 * **Customer Privacy**: End users can only read their own customer profile, point totals, and active redemption tickets.
+* **Audit Trail Security**: Immutable transaction ledgers prevent retro-active point tampering or deletion.
 
 ---
 
