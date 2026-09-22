@@ -275,6 +275,21 @@ Repeato features a robust **Dual-Mode Data Layer** managed via [`src/services/ap
 
 ---
 
+## 🗺️ Project Roadmap & Security Compliance
+
+### 🗺️ Future Roadmap
+* [ ] **Multi-Location Chain Support**: Hierarchical branch management with global and location-specific reward campaigns.
+* [ ] **WhatsApp & SMS Notifications**: Automated visit reminders and tier upgrade notifications via Twilio/WhatsApp Business API.
+* [ ] **Thermal Receipt & POS Printer Integration**: One-click print drivers for counter standees and receipt QR codes.
+* [ ] **Advanced Customer Segmentation**: Automated RFM (Recency, Frequency, Monetary) analytics for targeted marketing campaigns.
+
+### 🛡️ Security & Anti-Fraud Features
+* **Single-Use Ticket Rotations**: 1-time redemption codes (`RPT-*`) automatically expire after 24 hours to prevent duplicate claims or screenshot fraud.
+* **Strict Tenant Scoping**: Row Level Security (RLS) policies guarantee isolated query bounds per `business_id`.
+* **Append-Only Points Ledger**: Audit logging prevents unauthorized point modification or manual balance manipulation without recorded transactions.
+
+---
+
 ## 🤝 Contributing
 
 Contributions are welcome! Please follow these steps:
