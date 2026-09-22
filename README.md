@@ -191,8 +191,19 @@ The database migration scripts are managed via Supabase SQL migrations:
 
 Repeato features a robust **Dual-Mode Data Layer** managed via [`src/services/api.ts`](src/services/api.ts):
 
-* **🌐 Supabase Live Mode**: When `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are configured, `apiService` automatically routes requests to Supabase PostgreSQL with real-time Row Level Security checks.
-* **⚡ Reactive Offline / Fallback Mode**: If environment variables are omitted or database calls fail, the platform gracefully defaults to an in-memory `ReactiveStore` pre-seeded with rich sample cafe data, allowing zero-friction local testing and UI demonstration.
+* **🌐 Supabase Live Mode**:
+  * Activated when `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are specified in environment variables.
+  * Routes queries directly to Supabase PostgreSQL with real-time Row Level Security (RLS) enforcement.
+  * Supports real-time WebSocket subscriptions for instant status updates on customer redemptions and point ledger changes.
+
+* **⚡ Reactive Offline / Mock Fallback Mode**:
+  * Automatically activated when environment variables are omitted or when database connectivity checks fail.
+  * Relies on an in-memory `ReactiveStore` pre-populated with realistic cafe merchant data, products, rewards, and member profiles.
+  * Provides zero-friction local testing, instant UI prototyping, and offline demonstration without requiring database setup.
+
+* **🔄 Mode Transitioning & Diagnostics**:
+  * The application performs an automatic health handshake on boot up and logs current API operational mode to browser developer console tools.
+  * Developers can verify active data persistence status at any time via the Auth debug panel.
 
 ---
 
