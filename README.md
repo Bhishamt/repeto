@@ -248,6 +248,22 @@ Repeato features a robust **Dual-Mode Data Layer** managed via [`src/services/ap
 
 ---
 
+## 🔍 Troubleshooting & FAQ
+
+### 1. Application starts in Fallback / Mock Mode instead of Live Supabase
+* **Cause**: `VITE_SUPABASE_URL` or `VITE_SUPABASE_ANON_KEY` is missing from your `.env` file or invalid.
+* **Solution**: Ensure your `.env` contains valid credentials and restart the Vite development server (`npm run dev`).
+
+### 2. Database queries fail with RLS Permission Denied
+* **Cause**: Row Level Security policies require an authenticated user or matching `business_id` in `business_members`.
+* **Solution**: Ensure you have executed both `001_initial_schema.sql` and `002_security_and_realtime.sql` migrations in your Supabase project.
+
+### 3. Linter errors or TypeScript build failures
+* **Cause**: Stale node dependencies or type cache discrepancies.
+* **Solution**: Run `npm run lint` to identify Oxlint issues, or clear your build artifacts with `rm -rf dist node_modules/.vite`.
+
+---
+
 ## 🤝 Contributing
 
 Contributions are welcome! Please follow these steps:
