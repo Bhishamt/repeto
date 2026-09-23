@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { apiService } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 import { Transaction } from '../../types';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Receipt, Coffee, Gift, Sparkles } from 'lucide-react';
 
 export const ActivityView: React.FC = () => {
+  const { user } = useAuth();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   useEffect(() => {
-    apiService.getCustomerWallet('cust_bhisham').then((d) => setTransactions(d.transactions));
-  }, []);
+    if (user) {
+      apiService.getCustomerWallet(user.id).then((d) => setTransactions(d.transactions));
+    }
+  }, [user]);
 
   return (
     <div className="flex flex-col gap-6 animate-fade-in">

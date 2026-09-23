@@ -12,7 +12,7 @@ import { useAuth } from '../context/AuthContext';
 export const JoinBusinessPage: React.FC = () => {
   const { businessSlug } = useParams<{ businessSlug: string }>();
   const navigate = useNavigate();
-  const { loginCustomer } = useAuth();
+  const { user, loginCustomer } = useAuth();
 
   const [business, setBusiness] = useState<Business | null>(null);
   const [rules, setRules] = useState<LoyaltyRule | null>(null);
@@ -52,7 +52,8 @@ export const JoinBusinessPage: React.FC = () => {
 
     try {
       await loginCustomer(phoneOrEmail);
-      const res = await apiService.joinBusiness('cust_bhisham', business.slug);
+      const targetId = user?.id || phoneOrEmail;
+      const res = await apiService.joinBusiness(targetId, business.slug);
       setPointsAwarded(res.pointsAdded || welcomePoints);
       setJoinedSuccess(true);
       setTimeout(() => {

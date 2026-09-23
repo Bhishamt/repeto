@@ -7,9 +7,12 @@ import { Button } from '../../components/ui/Button';
 import { RedemptionTicketModal } from '../../components/domain/RedemptionTicketModal';
 import { Gift, Sparkles, Lock, CheckCircle2 } from 'lucide-react';
 
+import { useAuth } from '../../context/AuthContext';
+
 export const RewardsView: React.FC = () => {
+  const { user } = useAuth();
   const [businesses, setBusinesses] = useState<Business[]>([]);
-  const [activeBizId, setActiveBizId] = useState<string>('biz_bluebird');
+  const [activeBizId, setActiveBizId] = useState<string>('');
   const [rewards, setRewards] = useState<Reward[]>([]);
   const [memberships, setMemberships] = useState<BusinessCustomer[]>([]);
   const [selectedTicket, setSelectedTicket] = useState<RedemptionTicket | null>(null);
@@ -17,7 +20,9 @@ export const RewardsView: React.FC = () => {
   const [isRedeeming, setIsRedeeming] = useState(false);
 
   const fetchWallet = () => {
-    apiService.getCustomerWallet('cust_bhisham').then((d) => setMemberships(d.memberships));
+    if (user) {
+      apiService.getCustomerWallet(user.id).then((d) => setMemberships(d.memberships));
+    }
   };
 
   useEffect(() => {
@@ -29,7 +34,7 @@ export const RewardsView: React.FC = () => {
 
     const unsub = store.subscribe(fetchWallet);
     return unsub;
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     if (activeBizId) {
@@ -42,11 +47,11 @@ export const RewardsView: React.FC = () => {
   const currentPoints = activeMembership?.totalPoints ?? 0;
 
   const handleRedeem = async (reward: Reward) => {
-    if (currentPoints < reward.pointsCost) return;
+    if (currentPoints < reward.pointsCost || !user) return;
     setIsRedeeming(true);
     try {
       const ticket = await apiService.createRedemptionTicket(
-        'cust_bhisham',
+        user.id,
         reward.businessId,
         reward.id
       );

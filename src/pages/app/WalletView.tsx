@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { apiService } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 import { WalletCard } from '../../components/domain/WalletCard';
 import { RedemptionTicketModal } from '../../components/domain/RedemptionTicketModal';
 import { Card } from '../../components/ui/Card';
@@ -20,24 +21,50 @@ import { Business, BusinessCustomer, Transaction, RedemptionTicket } from '../..
 
 export const WalletView: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [businesses, setBusinesses] = useState<Business[]>([]);
-  const [activeBizId, setActiveBizId] = useState<string>('biz_bluebird');
+  const [activeBizId, setActiveBizId] = useState<string>('');
   const [memberships, setMemberships] = useState<BusinessCustomer[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [selectedTicket, setSelectedTicket] = useState<RedemptionTicket | null>(null);
   const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    apiService.getBusinesses().then((bList) => {
-      setBusinesses(bList);
-      if (bList.length > 0) setActiveBizId(bList[0].id);
-    });
+    let isMounted = true;
+    const loadWalletData = async () => {
+      setIsLoading(true);
+      try {
+        const bList = await apiService.getBusinesses();
+        if (!isMounted) return;
+        setBusinesses(bList);
 
-    apiService.getCustomerWallet('cust_bhisham').then((data) => {
-      setMemberships(data.memberships);
-      setTransactions(data.transactions);
-    });
-  }, []);
+        if (user) {
+          const data = await apiService.getCustomerWallet(user.id);
+          if (!isMounted) return;
+          setMemberships(data.memberships);
+          setTransactions(data.transactions);
+
+          if (data.memberships.length > 0) {
+            setActiveBizId(data.memberships[0].businessId);
+          } else if (bList.length > 0) {
+            setActiveBizId(bList[0].id);
+          }
+        } else if (bList.length > 0) {
+          setActiveBizId(bList[0].id);
+        }
+      } catch (err) {
+        console.error('Error loading customer wallet:', err);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+
+    loadWalletData();
+    return () => {
+      isMounted = false;
+    };
+  }, [user]);
 
   const activeBusiness = businesses.find((b) => b.id === activeBizId) || businesses[0];
   const activeMembership = memberships.find((m) => m.businessId === activeBizId);
@@ -46,7 +73,28 @@ export const WalletView: React.FC = () => {
   const nextRewardCost = 100;
   const progressPct = Math.min(100, Math.round((points / nextRewardCost) * 100));
 
-  if (!activeBusiness) return null;
+  if (isLoading) {
+    return (
+      <div className="p-12 text-center text-[#8C827A] font-medium text-xs flex flex-col items-center justify-center gap-2">
+        <Coffee className="w-8 h-8 text-[#D97706] animate-bounce" />
+        <span>Loading Customer Wallet...</span>
+      </div>
+    );
+  }
+
+  if (!activeBusiness) {
+    return (
+      <div className="p-8 text-center bg-[#F7F3EC] rounded-2xl border border-[#3D281D]/15 flex flex-col gap-3 items-center my-6">
+        <Coffee className="w-10 h-10 text-[#D97706]" />
+        <h3 className="font-heading font-bold text-base text-[#3D281D]">No Partner Cafes Found</h3>
+        <p className="text-xs text-[#57504B]">Scan a cafe QR code to join their loyalty program and start earning points!</p>
+        <Button variant="amber" size="sm" onClick={() => navigate('/join/bluebird-coffee')}>
+          <span>Explore Partner Cafes</span>
+          <ArrowRight className="w-4 h-4" />
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6 animate-fade-in">

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { apiService } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 import { Business, BusinessCustomer } from '../../types';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
@@ -9,13 +10,16 @@ import { Store, QrCode, ChevronRight, MapPin, Sparkles } from 'lucide-react';
 
 export const BusinessesView: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [memberships, setMemberships] = useState<BusinessCustomer[]>([]);
 
   useEffect(() => {
     apiService.getBusinesses().then(setBusinesses);
-    apiService.getCustomerWallet('cust_bhisham').then((d) => setMemberships(d.memberships));
-  }, []);
+    if (user) {
+      apiService.getCustomerWallet(user.id).then((d) => setMemberships(d.memberships));
+    }
+  }, [user]);
 
   return (
     <div className="flex flex-col gap-6 animate-fade-in">

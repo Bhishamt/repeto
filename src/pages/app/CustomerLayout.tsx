@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate, useLocation, Outlet } from 'react-router-dom';
+import { useNavigate, useLocation, Outlet, Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Wallet, Store, Gift, Receipt, User, QrCode } from 'lucide-react';
 
@@ -15,6 +15,10 @@ export const CustomerLayout: React.FC = () => {
     { name: 'Activity', href: '/app/activity', icon: Receipt },
     { name: 'Profile', href: '/app/profile', icon: User },
   ];
+
+  if (!user) {
+    return <Navigate to="/auth/customer" replace />;
+  }
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] text-[#1A1615] flex flex-col justify-between font-body max-w-md mx-auto border-x border-[#3D281D]/10 shadow-2xl relative">
