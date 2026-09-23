@@ -58,6 +58,38 @@ export const apiService = {
     return store.businesses;
   },
 
+  async getAuthorizedBusinesses(userId?: string): Promise<Business[]> {
+    if (isSupabaseConfigured && supabase) {
+      let targetUserId = userId;
+      if (!targetUserId) {
+        const { data: userData } = await supabase.auth.getUser();
+        targetUserId = userData?.user?.id;
+      }
+      if (!targetUserId) return [];
+
+      const { data: memberRows, error: memberErr } = await supabase
+        .from('business_members')
+        .select('business_id')
+        .eq('user_id', targetUserId);
+
+      if (memberErr || !memberRows || memberRows.length === 0) {
+        return [];
+      }
+
+      const businessIds = memberRows.map((m) => m.business_id);
+      const { data: bizData, error: bizErr } = await supabase
+        .from('businesses')
+        .select('*')
+        .in('id', businessIds);
+
+      if (!bizErr && bizData) {
+        return bizData as Business[];
+      }
+      return [];
+    }
+    return store.businesses.slice(0, 1);
+  },
+
   async getBusinessBySlug(slug: string): Promise<Business | null> {
     if (isSupabaseConfigured && supabase) {
       const { data, error } = await supabase.from('businesses').select('*').eq('slug', slug).single();
@@ -86,7 +118,14 @@ export const apiService = {
     };
 
     if (isSupabaseConfigured && supabase) {
+      const { data: userRes } = await supabase.auth.getUser();
+      const currentUserId = userRes?.user?.id;
       await supabase.from('businesses').insert([newBusiness]);
+      if (currentUserId) {
+        await supabase.from('business_members').insert([
+          { business_id: newBusiness.id, user_id: currentUserId, role: 'owner' }
+        ]);
+      }
     }
 
     store.businesses.push(newBusiness);
@@ -287,19 +326,154 @@ export const apiService = {
     return store.businessCustomers.filter((bc) => bc.businessId === businessId);
   },
 
-  async getCustomerWallet(customerId: string): Promise<{ customer: Customer; memberships: BusinessCustomer[]; transactions: Transaction[] }> {
-    const customer = store.customers.find((c) => c.id === customerId || c.userId === customerId) || store.customers[0];
+  async getCustomerWallet(userIdOrCustId: string): Promise<{ customer: Customer; memberships: BusinessCustomer[]; transactions: Transaction[] }> {
+    if (isSupabaseConfigured && supabase) {
+      let { data: customerRow } = await supabase
+        .from('customers')
+        .select('*')
+        .or(`user_id.eq.${userIdOrCustId},id.eq.${userIdOrCustId}`)
+        .maybeSingle();
+
+      if (!customerRow) {
+        const { data: userRes } = await supabase.auth.getUser();
+        const authUser = userRes?.user;
+        const newCust = {
+          user_id: authUser?.id || userIdOrCustId,
+          full_name: authUser?.user_metadata?.full_name || authUser?.email?.split('@')[0] || 'Customer User',
+          email: authUser?.email || '',
+          phone: authUser?.phone || '',
+          avatar_url: authUser?.user_metadata?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120&q=80',
+        };
+        const { data: createdCust } = await supabase.from('customers').insert([newCust]).select().maybeSingle();
+        if (createdCust) customerRow = createdCust;
+      }
+
+      if (customerRow) {
+        const custId = customerRow.id;
+
+        const { data: memRows } = await supabase
+          .from('business_customers')
+          .select('*')
+          .eq('customer_id', custId);
+
+        const memberships: BusinessCustomer[] = (memRows || []).map((m: any) => ({
+          id: m.id,
+          businessId: m.business_id,
+          customerId: m.customer_id,
+          customerName: customerRow.full_name,
+          customerPhone: customerRow.phone,
+          customerEmail: customerRow.email,
+          totalPoints: m.total_points || 0,
+          totalVisits: m.total_visits || 0,
+          lifetimeSpend: Number(m.lifetime_spend || 0),
+          tier: m.tier || 'Bronze',
+          joinedAt: m.joined_at,
+          lastVisitAt: m.last_visit_at,
+        }));
+
+        const { data: txRows } = await supabase
+          .from('points_transactions')
+          .select('*, businesses(name)')
+          .eq('customer_id', custId)
+          .order('created_at', { ascending: false });
+
+        const transactions: Transaction[] = (txRows || []).map((t: any) => ({
+          id: t.id,
+          businessId: t.business_id,
+          businessName: t.businesses?.name || 'Cafe',
+          customerId: t.customer_id,
+          customerName: customerRow.full_name,
+          points: t.points,
+          type: t.type,
+          source: t.source || 'Purchase',
+          referenceId: t.reference_id,
+          createdAt: t.created_at,
+        }));
+
+        const customer: Customer = {
+          id: customerRow.id,
+          userId: customerRow.user_id,
+          fullName: customerRow.full_name,
+          email: customerRow.email,
+          phone: customerRow.phone,
+          avatarUrl: customerRow.avatar_url,
+          createdAt: customerRow.created_at,
+        };
+
+        return { customer, memberships, transactions };
+      }
+    }
+
+    const customer = store.customers.find((c) => c.id === userIdOrCustId || c.userId === userIdOrCustId) || store.customers[0];
     const memberships = store.businessCustomers.filter((bc) => bc.customerId === customer.id);
     const transactions = store.transactions.filter((t) => t.customerId === customer.id);
 
     return { customer, memberships, transactions };
   },
 
-  async joinBusiness(customerId: string, businessSlug: string): Promise<{ success: boolean; business: Business; pointsAdded: number }> {
+  async joinBusiness(userIdOrCustId: string, businessSlug: string): Promise<{ success: boolean; business: Business; pointsAdded: number }> {
     const business = await this.getBusinessBySlug(businessSlug);
     if (!business) throw new Error('Business not found');
 
-    const customer = store.customers.find((c) => c.id === customerId || c.userId === customerId) || store.customers[0];
+    if (isSupabaseConfigured && supabase) {
+      let { data: customerRow } = await supabase
+        .from('customers')
+        .select('*')
+        .or(`user_id.eq.${userIdOrCustId},id.eq.${userIdOrCustId}`)
+        .maybeSingle();
+
+      if (!customerRow) {
+        const { data: userRes } = await supabase.auth.getUser();
+        const authUser = userRes?.user;
+        const newCust = {
+          user_id: authUser?.id || userIdOrCustId,
+          full_name: authUser?.user_metadata?.full_name || authUser?.email?.split('@')[0] || 'Customer User',
+          email: authUser?.email || '',
+          phone: authUser?.phone || '',
+          avatar_url: authUser?.user_metadata?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120&q=80',
+        };
+        const { data: createdCust } = await supabase.from('customers').insert([newCust]).select().maybeSingle();
+        if (createdCust) customerRow = createdCust;
+      }
+
+      if (customerRow) {
+        const custId = customerRow.id;
+        const { data: existingMem } = await supabase
+          .from('business_customers')
+          .select('*')
+          .eq('business_id', business.id)
+          .eq('customer_id', custId)
+          .maybeSingle();
+
+        const rules = await this.getLoyaltyRules(business.id);
+        const welcomeBonus = rules.welcomePoints || 50;
+
+        if (existingMem) {
+          return { success: true, business, pointsAdded: 0 };
+        }
+
+        await supabase.from('business_customers').insert([{
+          business_id: business.id,
+          customer_id: custId,
+          total_points: welcomeBonus,
+          total_visits: 1,
+          lifetime_spend: 0,
+          tier: 'Bronze',
+        }]);
+
+        await supabase.from('points_transactions').insert([{
+          business_id: business.id,
+          customer_id: custId,
+          points: welcomeBonus,
+          type: 'welcome',
+          source: `Welcome Joining Bonus at ${business.name}`,
+        }]);
+
+        return { success: true, business, pointsAdded: welcomeBonus };
+      }
+    }
+
+    const customer = store.customers.find((c) => c.id === userIdOrCustId || c.userId === userIdOrCustId) || store.customers[0];
     const existingMembership = store.businessCustomers.find(
       (bc) => bc.businessId === business.id && bc.customerId === customer.id
     );
@@ -347,8 +521,63 @@ export const apiService = {
   },
 
   // --- REWARD REDEMPTION ---
-  async createRedemptionTicket(customerId: string, businessId: string, rewardId: string): Promise<RedemptionTicket> {
-    const customer = store.customers.find((c) => c.id === customerId || c.userId === customerId) || store.customers[0];
+  async createRedemptionTicket(customerIdOrUserId: string, businessId: string, rewardId: string): Promise<RedemptionTicket> {
+    if (isSupabaseConfigured && supabase) {
+      let { data: customerRow } = await supabase
+        .from('customers')
+        .select('*')
+        .or(`user_id.eq.${customerIdOrUserId},id.eq.${customerIdOrUserId}`)
+        .maybeSingle();
+
+      if (customerRow) {
+        const custId = customerRow.id;
+        const code = `RED-${Math.floor(100000 + Math.random() * 900000)}`;
+        const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+
+        const { data: ticketRow, error: redErr } = await supabase.from('reward_redemptions').insert([{
+          business_id: businessId,
+          customer_id: custId,
+          reward_id: rewardId,
+          code,
+          status: 'pending',
+          expires_at: expiresAt,
+        }]).select('*, rewards(title, points_cost), businesses(name)').single();
+
+        if (!redErr && ticketRow) {
+          const { data: mem } = await supabase.from('business_customers').select('total_points').eq('business_id', businessId).eq('customer_id', custId).single();
+          const currentPts = mem?.total_points || 0;
+          const pointsCost = ticketRow.rewards?.points_cost || 100;
+          const newPts = Math.max(0, currentPts - pointsCost);
+
+          await supabase.from('business_customers').update({ total_points: newPts }).eq('business_id', businessId).eq('customer_id', custId);
+
+          await supabase.from('points_transactions').insert([{
+            business_id: businessId,
+            customer_id: custId,
+            points: -pointsCost,
+            type: 'redeem',
+            source: `Redeemed ${ticketRow.rewards?.title || 'Reward'}`,
+          }]);
+
+          return {
+            id: ticketRow.id,
+            businessId: ticketRow.business_id,
+            businessName: ticketRow.businesses?.name || 'Cafe',
+            customerId: ticketRow.customer_id,
+            customerName: customerRow.full_name,
+            rewardId: ticketRow.reward_id,
+            rewardTitle: ticketRow.rewards?.title || 'Reward',
+            pointsCost,
+            code: ticketRow.code,
+            status: ticketRow.status,
+            expiresAt: ticketRow.expires_at,
+            createdAt: ticketRow.created_at,
+          };
+        }
+      }
+    }
+
+    const customer = store.customers.find((c) => c.id === customerIdOrUserId || c.userId === customerIdOrUserId) || store.customers[0];
     const business = store.businesses.find((b) => b.id === businessId) || store.businesses[0];
     const reward = store.rewards.find((r) => r.id === rewardId);
 
