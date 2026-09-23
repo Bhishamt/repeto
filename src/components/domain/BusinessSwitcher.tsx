@@ -31,13 +31,15 @@ export const BusinessSwitcher: React.FC = () => {
             </span>
           </div>
         </div>
-        <ChevronDown className={`w-4 h-4 text-[#57504B] transition-transform duration-200 shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
+        {businesses.length > 1 && (
+          <ChevronDown className={`w-4 h-4 text-[#57504B] transition-transform duration-200 shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
+        )}
       </button>
 
       {isOpen && (
         <div className="absolute top-full left-0 right-0 mt-2 z-50 bg-[#FDFBF7] border border-[#3D281D]/15 rounded-xl shadow-xl overflow-hidden animate-fade-in p-1.5">
           <div className="text-[10px] font-bold uppercase tracking-wider text-[#8C827A] px-3 py-1.5">
-            Switch Business (Multi-Tenant Demo)
+            Your Businesses
           </div>
           {businesses.map((biz) => {
             const isSelected = biz.id === activeBusiness.id;

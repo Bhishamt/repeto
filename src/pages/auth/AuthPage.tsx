@@ -13,27 +13,37 @@ export const AuthPage: React.FC<{ initialMode?: 'customer' | 'business' }> = ({
   const [activeTab, setActiveTab] = useState<'customer' | 'business'>(initialMode);
   const [phoneOrEmail, setPhoneOrEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpCode, setOtpCode] = useState('');
-  const { loginCustomer, loginBusinessOwner, devSwitchRole } = useAuth();
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const { loginCustomer, loginBusinessOwner } = useAuth();
   const navigate = useNavigate();
 
   const handleCustomerSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!otpSent) {
-      setOtpSent(true);
-    } else {
-      await loginCustomer(phoneOrEmail || '+91 98765 43210');
-      devSwitchRole('customer');
+    setError('');
+    setIsLoading(true);
+    try {
+      await loginCustomer(phoneOrEmail, password);
       navigate('/app/wallet');
+    } catch (err: any) {
+      setError(err.message || 'Customer authentication failed. Please check credentials.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleBusinessSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await loginBusinessOwner(phoneOrEmail || 'owner@bluebirdcoffee.com');
-    devSwitchRole('business_owner');
-    navigate('/dashboard/overview');
+    setError('');
+    setIsLoading(true);
+    try {
+      await loginBusinessOwner(phoneOrEmail, password);
+      navigate('/dashboard/overview');
+    } catch (err: any) {
+      setError(err.message || 'Business authentication failed. Invalid email or password.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -60,7 +70,10 @@ export const AuthPage: React.FC<{ initialMode?: 'customer' | 'business' }> = ({
           {/* Role Picker Tabs */}
           <div className="grid grid-cols-2 gap-2 p-1.5 bg-[#EFE7DC] rounded-xl mb-6 border border-[#3D281D]/10">
             <button
-              onClick={() => setActiveTab('customer')}
+              onClick={() => {
+                setActiveTab('customer');
+                setError('');
+              }}
               className={`flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'customer'
                   ? 'bg-[#3D281D] text-[#FDFBF7] shadow-md'
@@ -72,7 +85,10 @@ export const AuthPage: React.FC<{ initialMode?: 'customer' | 'business' }> = ({
             </button>
 
             <button
-              onClick={() => setActiveTab('business')}
+              onClick={() => {
+                setActiveTab('business');
+                setError('');
+              }}
               className={`flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'business'
                   ? 'bg-[#3D281D] text-[#FDFBF7] shadow-md'
@@ -84,64 +100,36 @@ export const AuthPage: React.FC<{ initialMode?: 'customer' | 'business' }> = ({
             </button>
           </div>
 
+          {error && (
+            <div className="mb-4 p-3 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-xs font-semibold">
+              {error}
+            </div>
+          )}
+
           {activeTab === 'customer' ? (
             <form onSubmit={handleCustomerSubmit} className="flex flex-col gap-4">
               <h2 className="font-heading font-bold text-xl text-[#3D281D]">Customer Sign In</h2>
 
-              {!otpSent ? (
-                <>
-                  <Input
-                    label="Mobile Phone or Email"
-                    placeholder="+91 98765 43210"
-                    value={phoneOrEmail}
-                    onChange={(e) => setPhoneOrEmail(e.target.value)}
-                    required
-                  />
-                  <Button variant="amber" size="md" type="submit" className="w-full">
-                    <span>Send Verification OTP</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <div className="p-3 bg-[#FEF3C7] rounded-xl text-xs text-[#D97706] font-medium">
-                    OTP sent to {phoneOrEmail || '+91 98765 43210'}. Enter 4-digit code.
-                  </div>
-                  <Input
-                    label="Enter OTP Code"
-                    placeholder="8492"
-                    value={otpCode}
-                    onChange={(e) => setOtpCode(e.target.value)}
-                    required
-                  />
-                  <Button variant="amber" size="md" type="submit" className="w-full">
-                    <span>Verify & Open Wallet</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </Button>
-                </>
-              )}
+              <Input
+                label="Email or Mobile Phone"
+                placeholder="customer@example.com"
+                value={phoneOrEmail}
+                onChange={(e) => setPhoneOrEmail(e.target.value)}
+                required
+              />
 
-              <div className="relative my-2">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-[#3D281D]/10" />
-                </div>
-                <div className="relative flex justify-center text-xs">
-                  <span className="bg-[#FDFBF7] px-2 text-[#8C827A]">Or quick demo access</span>
-                </div>
-              </div>
+              <Input
+                label="Password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
 
-              <Button
-                variant="secondary"
-                size="sm"
-                type="button"
-                onClick={() => {
-                  loginCustomer('+91 98765 43210');
-                  devSwitchRole('customer');
-                  navigate('/app/wallet');
-                }}
-              >
-                <Sparkles className="w-4 h-4 text-[#D97706]" />
-                <span>Sign In as Demo Customer (Bhisham)</span>
+              <Button variant="amber" size="md" type="submit" disabled={isLoading} className="w-full">
+                <span>{isLoading ? 'Signing In...' : 'Sign In to Customer Wallet'}</span>
+                <ArrowRight className="w-4 h-4" />
               </Button>
             </form>
           ) : (
@@ -165,8 +153,8 @@ export const AuthPage: React.FC<{ initialMode?: 'customer' | 'business' }> = ({
                 required
               />
 
-              <Button variant="primary" size="md" type="submit" className="w-full">
-                <span>Sign In to Dashboard</span>
+              <Button variant="primary" size="md" type="submit" disabled={isLoading} className="w-full">
+                <span>{isLoading ? 'Signing In...' : 'Sign In to Dashboard'}</span>
                 <ArrowRight className="w-4 h-4" />
               </Button>
 
@@ -178,31 +166,7 @@ export const AuthPage: React.FC<{ initialMode?: 'customer' | 'business' }> = ({
                 >
                   Register New Business?
                 </button>
-                <span className="text-[#8C827A]">Forgot password?</span>
               </div>
-
-              <div className="relative my-2">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-[#3D281D]/10" />
-                </div>
-                <div className="relative flex justify-center text-xs">
-                  <span className="bg-[#FDFBF7] px-2 text-[#8C827A]">Quick Demo Sign In</span>
-                </div>
-              </div>
-
-              <Button
-                variant="secondary"
-                size="sm"
-                type="button"
-                onClick={() => {
-                  loginBusinessOwner('owner@bluebirdcoffee.com');
-                  devSwitchRole('business_owner');
-                  navigate('/dashboard/overview');
-                }}
-              >
-                <Sparkles className="w-4 h-4 text-[#D97706]" />
-                <span>Sign In as Bluebird Coffee Owner</span>
-              </Button>
             </form>
           )}
         </Card>

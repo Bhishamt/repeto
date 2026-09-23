@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, UserRole, Business } from '../types';
 import { apiService, store } from '../services/api';
+import { supabase, isSupabaseConfigured } from '../services/supabase';
 
 interface AuthContextType {
   user: User | null;
@@ -8,7 +9,7 @@ interface AuthContextType {
   activeBusiness: Business | null;
   businesses: Business[];
   setActiveBusiness: (businessId: string) => void;
-  loginCustomer: (phoneOrEmail: string) => Promise<void>;
+  loginCustomer: (phoneOrEmail: string, password?: string) => Promise<void>;
   loginBusinessOwner: (email: string, password?: string) => Promise<void>;
   logout: () => void;
   devSwitchRole: (role: UserRole) => void;
@@ -28,29 +29,54 @@ const DEFAULT_USER: User = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(DEFAULT_USER);
+  const [user, setUser] = useState<User | null>(isSupabaseConfigured ? null : DEFAULT_USER);
   const [role, setRole] = useState<UserRole>('business_owner');
-  const [businesses, setBusinesses] = useState<Business[]>(store.businesses);
-  const [activeBusiness, setActiveBusinessState] = useState<Business | null>(store.businesses[0] || null);
+  const [businesses, setBusinesses] = useState<Business[]>([]);
+  const [activeBusiness, setActiveBusinessState] = useState<Business | null>(null);
 
   useEffect(() => {
-    const unsubscribe = store.subscribe(() => {
-      setBusinesses([...store.businesses]);
-      if (activeBusiness) {
-        const found = store.businesses.find((b) => b.id === activeBusiness.id);
-        if (found) setActiveBusinessState(found);
+    const initAuth = async () => {
+      if (isSupabaseConfigured && supabase) {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          const supabaseUser: User = {
+            id: session.user.id,
+            email: session.user.email || '',
+            fullName: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'Business User',
+            role: 'business_owner',
+            activeBusinessId: '',
+          };
+          setUser(supabaseUser);
+          setRole('business_owner');
+          const authBiz = await apiService.getAuthorizedBusinesses(session.user.id);
+          setBusinesses(authBiz);
+          if (authBiz.length > 0) {
+            setActiveBusinessState(authBiz[0]);
+            setUser({ ...supabaseUser, activeBusinessId: authBiz[0].id });
+          } else {
+            setActiveBusinessState(null);
+          }
+          return;
+        } else {
+          setUser(null);
+          setBusinesses([]);
+          setActiveBusinessState(null);
+          return;
+        }
       }
-    });
 
-    apiService.getBusinesses().then((bList) => {
-      setBusinesses(bList);
-      if (bList.length > 0 && !activeBusiness) {
-        setActiveBusinessState(bList[0]);
+      // Offline / local fallback mode
+      if (user && (role === 'business_owner' || role === 'business_staff')) {
+        const authBiz = await apiService.getAuthorizedBusinesses(user.id);
+        setBusinesses(authBiz);
+        if (authBiz.length > 0) {
+          setActiveBusinessState(authBiz[0]);
+        }
       }
-    });
+    };
 
-    return unsubscribe;
-  }, [activeBusiness]);
+    initAuth();
+  }, []);
 
   const setActiveBusiness = (businessId: string) => {
     const found = businesses.find((b) => b.id === businessId);
@@ -59,39 +85,110 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (user) {
         setUser({ ...user, activeBusinessId: found.id });
       }
+    } else {
+      console.warn(`Unauthorized attempt to switch to businessId: ${businessId}`);
     }
   };
 
-  const loginCustomer = async (phoneOrEmail: string) => {
+  const loginCustomer = async (phoneOrEmail: string, password?: string) => {
+    if (isSupabaseConfigured && supabase) {
+      if (phoneOrEmail.includes('@') && password) {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: phoneOrEmail,
+          password: password || '',
+        });
+        if (error) {
+          const signUpRes = await supabase.auth.signUp({
+            email: phoneOrEmail,
+            password: password || '',
+          });
+          if (signUpRes.error) throw signUpRes.error;
+          if (signUpRes.data.user) {
+            const customerUser: User = {
+              id: signUpRes.data.user.id,
+              email: phoneOrEmail,
+              fullName: phoneOrEmail.split('@')[0],
+              role: 'customer',
+            };
+            setUser(customerUser);
+            setRole('customer');
+            return;
+          }
+        }
+        if (data.user) {
+          const customerUser: User = {
+            id: data.user.id,
+            email: data.user.email || phoneOrEmail,
+            fullName: data.user.user_metadata?.full_name || phoneOrEmail.split('@')[0],
+            role: 'customer',
+          };
+          setUser(customerUser);
+          setRole('customer');
+          return;
+        }
+      }
+    }
+
     const customerUser: User = {
-      id: 'usr_customer_demo',
-      email: phoneOrEmail.includes('@') ? phoneOrEmail : 'bhisham@example.com',
-      fullName: 'Bhisham Sharma',
+      id: `usr_cust_${Date.now()}`,
+      email: phoneOrEmail.includes('@') ? phoneOrEmail : `${phoneOrEmail}@customer.local`,
+      fullName: 'Customer User',
       phone: phoneOrEmail.includes('@') ? '+91 98765 43210' : phoneOrEmail,
       role: 'customer',
-      avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120&q=80',
     };
     setUser(customerUser);
     setRole('customer');
   };
 
-  const loginBusinessOwner = async (email: string) => {
+  const loginBusinessOwner = async (email: string, password?: string) => {
+    if (isSupabaseConfigured && supabase) {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password: password || '',
+      });
+      if (error) {
+        throw error;
+      }
+      if (data.user) {
+        const ownerUser: User = {
+          id: data.user.id,
+          email: data.user.email || email,
+          fullName: data.user.user_metadata?.full_name || email.split('@')[0],
+          role: 'business_owner',
+          activeBusinessId: '',
+        };
+        setUser(ownerUser);
+        setRole('business_owner');
+        const authBiz = await apiService.getAuthorizedBusinesses(data.user.id);
+        setBusinesses(authBiz);
+        if (authBiz.length > 0) {
+          setActiveBusinessState(authBiz[0]);
+          setUser({ ...ownerUser, activeBusinessId: authBiz[0].id });
+        } else {
+          setActiveBusinessState(null);
+        }
+      }
+      return;
+    }
+
     const ownerUser: User = {
       id: 'usr_owner_demo',
-      email: email || 'owner@bluebirdcoffee.com',
-      fullName: 'Vikramaditya (Owner)',
+      email: email,
+      fullName: email.split('@')[0],
       role: 'business_owner',
-      activeBusinessId: businesses[0]?.id || 'biz_bluebird',
+      activeBusinessId: '',
     };
     setUser(ownerUser);
     setRole('business_owner');
-    if (businesses.length > 0) {
-      setActiveBusinessState(businesses[0]);
-    }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    if (isSupabaseConfigured && supabase) {
+      await supabase.auth.signOut();
+    }
     setUser(null);
+    setBusinesses([]);
+    setActiveBusinessState(null);
   };
 
   const devSwitchRole = (newRole: UserRole) => {

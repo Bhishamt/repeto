@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation, Outlet } from 'react-router-dom';
+import { useNavigate, useLocation, Outlet, Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { BusinessSwitcher } from '../../components/domain/BusinessSwitcher';
 import { StaffVerificationModal } from '../../components/domain/StaffVerificationModal';
@@ -40,6 +40,10 @@ export const DashboardLayout: React.FC = () => {
     { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },
   ];
+
+  if (!user) {
+    return <Navigate to="/auth/business" replace />;
+  }
 
   if (!activeBusiness) return null;
 
