@@ -253,9 +253,12 @@ Repeato features a robust **Dual-Mode Data Layer** managed via [`src/services/ap
 | Command | Action |
 | :--- | :--- |
 | `npm run dev` | Starts Vite development server with hot module replacement |
-| `npm run build` | Compiles TypeScript and builds production distribution in `dist/` |
+| `npm run build` | Compiles TypeScript and builds optimized production distribution in `dist/` with manual vendor chunking |
+| `npm run test` | Executes unit test suite and service validation checks using Node test runner |
 | `npm run preview` | Previews production build locally |
 | `npm run lint` | Runs Oxlint linter check across codebase |
+
+> ⚡ **Build Optimization**: Production build uses custom vendor chunking in `vite.config.ts` (`vendor-react`, `vendor-ui`, `vendor-supabase`), keeping maximum chunk sizes under 300 kB for sub-second page loads.
 
 ---
 

@@ -12,6 +12,7 @@
 
 | Test Type | Coverage |
 |-----------|---------|
+| Automated Unit & Integration | Data models, point calculations, redemption rules, and store subscription listeners (`npm test`) |
 | Functional (happy path) | All features in MVP_SCOPE.md |
 | Negative / error path | All failure conditions from SRS.md |
 | Security / tenant isolation | All cross-tenant and cross-role scenarios |
