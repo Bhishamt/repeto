@@ -42,3 +42,18 @@ export function formatTimestamp(isoString: string): string {
     year: 'numeric',
   });
 }
+
+export function truncateText(text: string, maxLength: number = 30): string {
+  if (!text) return '';
+  if (text.length <= maxLength) return text;
+  return `${text.slice(0, maxLength).trim()}...`;
+}
+
+export function getRelativeTimeString(daysAgo: number): string {
+  if (daysAgo === 0) return 'Today';
+  if (daysAgo === 1) return 'Yesterday';
+  if (daysAgo < 30) return `${daysAgo} days ago`;
+  const months = Math.floor(daysAgo / 30);
+  return `${months} month${months > 1 ? 's' : ''} ago`;
+}
+

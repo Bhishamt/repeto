@@ -6,6 +6,8 @@ import {
   formatCurrency,
   formatPoints,
   formatTimestamp,
+  truncateText,
+  getRelativeTimeString,
 } from '../src/utils/formatters.ts';
 
 test('calculatePoints correctly calculates points earned', () => {
@@ -40,3 +42,18 @@ test('formatTimestamp formats ISO strings safely', () => {
   assert.equal(formatTimestamp('invalid-date'), 'Invalid Date');
   assert.equal(formatTimestamp(''), 'N/A');
 });
+
+test('truncateText truncates text over maxLength', () => {
+  assert.equal(truncateText('Short text', 20), 'Short text');
+  assert.equal(truncateText('This text is way too long for display', 10), 'This text...');
+  assert.equal(truncateText('', 10), '');
+});
+
+test('getRelativeTimeString formats relative days and months', () => {
+  assert.equal(getRelativeTimeString(0), 'Today');
+  assert.equal(getRelativeTimeString(1), 'Yesterday');
+  assert.equal(getRelativeTimeString(5), '5 days ago');
+  assert.equal(getRelativeTimeString(45), '1 month ago');
+  assert.equal(getRelativeTimeString(90), '3 months ago');
+});
+
