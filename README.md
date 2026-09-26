@@ -260,8 +260,9 @@ Repeato features a robust **Dual-Mode Data Layer** managed via [`src/services/ap
 
 > ⚡ **Build & Utility Architecture**:
 > - Production build uses custom vendor chunking in `vite.config.ts` (`vendor-react`, `vendor-ui`, `vendor-supabase`), keeping maximum chunk sizes under 300 kB for sub-second page loads.
-> - Shared domain calculations and formatting (`calculatePoints`, `formatCurrency`, `formatPoints`, `formatTimestamp`) are exported from `src/utils/formatters.ts`.
-> - Reusable UI components (`Badge`, `Button`, `Card`, `Input`, `Modal`, `Toast`, `EmptyState`) are centrally exported via `src/components/ui/index.ts`.
+> - Shared domain calculations and formatting (`calculatePoints`, `formatCurrency`, `formatPoints`, `formatTimestamp`, `truncateText`, `getRelativeTimeString`) are exported from `src/utils/formatters.ts`.
+> - Reusable UI components (`Badge`, `Button`, `Card`, `Input`, `Modal`, `Toast`, `EmptyState`, `LoadingSpinner`) are centrally exported via `src/components/ui/index.ts`.
+
 
 ---
 
