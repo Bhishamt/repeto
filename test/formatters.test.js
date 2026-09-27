@@ -8,6 +8,8 @@ import {
   formatTimestamp,
   truncateText,
   getRelativeTimeString,
+  isValidEmail,
+  isValidPhone,
 } from '../src/utils/formatters.ts';
 
 test('calculatePoints correctly calculates points earned', () => {
@@ -56,4 +58,22 @@ test('getRelativeTimeString formats relative days and months', () => {
   assert.equal(getRelativeTimeString(45), '1 month ago');
   assert.equal(getRelativeTimeString(90), '3 months ago');
 });
+
+test('isValidEmail validates email addresses accurately', () => {
+  assert.equal(isValidEmail('user@example.com'), true);
+  assert.equal(isValidEmail('test.name+alias@domain.co.in'), true);
+  assert.equal(isValidEmail('invalid-email'), false);
+  assert.equal(isValidEmail('@missinguser.com'), false);
+  assert.equal(isValidEmail(''), false);
+});
+
+test('isValidPhone validates telephone format strings', () => {
+  assert.equal(isValidPhone('+919876543210'), true);
+  assert.equal(isValidPhone('9876543210'), true);
+  assert.equal(isValidPhone('+1 (555) 019-2834'), true);
+  assert.equal(isValidPhone('abc123'), false);
+  assert.equal(isValidPhone('123'), false);
+  assert.equal(isValidPhone(''), false);
+});
+
 
