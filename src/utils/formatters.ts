@@ -57,3 +57,20 @@ export function getRelativeTimeString(daysAgo: number): string {
   return `${months} month${months > 1 ? 's' : ''} ago`;
 }
 
+export function isValidEmail(email: string): boolean {
+  if (!email || typeof email !== 'string') return false;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email.trim());
+}
+
+export function isValidPhone(phone: string): boolean {
+  if (!phone || typeof phone !== 'string') return false;
+  const cleaned = phone.trim();
+  const digitsOnly = cleaned.replace(/\D/g, '');
+  if (digitsOnly.length < 7 || digitsOnly.length > 15) return false;
+  const phoneRegex = /^\+?[0-9\s\-()]+$/;
+  return phoneRegex.test(cleaned);
+}
+
+
+
