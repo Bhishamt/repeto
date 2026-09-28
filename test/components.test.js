@@ -11,8 +11,11 @@ test('UI Component Exports Structure Integrity', (t) => {
     'Toast',
     'EmptyState',
     'LoadingSpinner',
+    'TierBadge',
   ];
 
-  assert.strictEqual(expectedExports.length, 8, 'UI library should export 8 core primitives');
+  assert.strictEqual(expectedExports.length, 9, 'UI library should export 9 core primitives');
   assert.ok(expectedExports.includes('LoadingSpinner'), 'LoadingSpinner component should be registered');
+  assert.ok(expectedExports.includes('TierBadge'), 'TierBadge component should be registered');
 });
+
