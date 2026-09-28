@@ -72,5 +72,31 @@ export function isValidPhone(phone: string): boolean {
   return phoneRegex.test(cleaned);
 }
 
+export type LoyaltyTier = 'Bronze' | 'Silver' | 'Gold' | 'Platinum';
+
+export function calculateCustomerTier(
+  totalPoints: number,
+  lifetimeSpend: number = 0
+): LoyaltyTier {
+  if (totalPoints >= 1000 || lifetimeSpend >= 10000) return 'Platinum';
+  if (totalPoints >= 500 || lifetimeSpend >= 5000) return 'Gold';
+  if (totalPoints >= 200 || lifetimeSpend >= 2000) return 'Silver';
+  return 'Bronze';
+}
+
+export function getTierDiscountPercentage(tier: string): number {
+  switch (tier) {
+    case 'Platinum':
+      return 15;
+    case 'Gold':
+      return 10;
+    case 'Silver':
+      return 5;
+    default:
+      return 0;
+  }
+}
+
+
 
 
