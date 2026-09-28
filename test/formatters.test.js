@@ -10,6 +10,8 @@ import {
   getRelativeTimeString,
   isValidEmail,
   isValidPhone,
+  calculateCustomerTier,
+  getTierDiscountPercentage,
 } from '../src/utils/formatters.ts';
 
 test('calculatePoints correctly calculates points earned', () => {
@@ -75,5 +77,24 @@ test('isValidPhone validates telephone format strings', () => {
   assert.equal(isValidPhone('123'), false);
   assert.equal(isValidPhone(''), false);
 });
+
+test('calculateCustomerTier determines loyalty tier correctly based on points or spend', () => {
+  assert.equal(calculateCustomerTier(0, 0), 'Bronze');
+  assert.equal(calculateCustomerTier(250, 0), 'Silver');
+  assert.equal(calculateCustomerTier(0, 3000), 'Silver');
+  assert.equal(calculateCustomerTier(500, 0), 'Gold');
+  assert.equal(calculateCustomerTier(0, 6000), 'Gold');
+  assert.equal(calculateCustomerTier(1200, 0), 'Platinum');
+  assert.equal(calculateCustomerTier(0, 15000), 'Platinum');
+});
+
+test('getTierDiscountPercentage returns correct discount percent per tier', () => {
+  assert.equal(getTierDiscountPercentage('Bronze'), 0);
+  assert.equal(getTierDiscountPercentage('Silver'), 5);
+  assert.equal(getTierDiscountPercentage('Gold'), 10);
+  assert.equal(getTierDiscountPercentage('Platinum'), 15);
+  assert.equal(getTierDiscountPercentage('Unknown'), 0);
+});
+
 
 
