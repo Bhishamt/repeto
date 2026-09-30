@@ -314,8 +314,3 @@ Contributions are welcome! Please follow these steps:
 
 Distributed under the **MIT License**. See `LICENSE` for more information.
 
----
-
-<div align="center">
-  <sub>Built with ❤️ for specialty cafes & F&B businesses.</sub>
-</div>
